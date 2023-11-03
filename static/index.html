@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello</title>
+    <style>
+        .user-label,
+        .assistant-label {
+            font-weight: bold;
+            color: black;
+        }
+
+        .user-msg {
+            color: rgb(1, 77, 1);
+        }
+
+        .assistant-msg {
+            color: rgb(165, 3, 3);
+        }
+
+        #chatArea {
+            height: 600px;
+            width: 50%;
+            overflow: auto;
+            border: 2px solid black;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <input id="id1" type="text" value="今天天气怎么样">
+    <button type="button" onclick="fetchData()">Query</button>
+    <div id="chatArea"></div>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        async function fetchData() {
+            var userInput = document.getElementById("id1").value;
+            var newEl = document.createElement('p');
+            newEl.innerHTML = '<span class="user-label">User:</span> <span class="user-msg">' + userInput + '</span>';
+            document.getElementById("chatArea").appendChild(newEl);
+            document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
+
+            try {
+                const response = await axios.get("http://127.0.0.1:8000/query", { params: { query: userInput } });
+                document.getElementById("responseArea").value = JSON.stringify(response.data, null, 2);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        const socket = io('http://127.0.0.1:8000');  // 请根据实际情况修改这里的地址
+        // 监听服务器发送的“message”事件
+        socket.on('message', function (data) {
+            data = data.replace(/\"/g, '');
+            var parts = data.split(': ');
+            var sender = parts[0];
+            var message = parts.slice(1).join(': ');
+            var newEl = document.createElement('p');
+            if (sender === 'User') {
+                newEl.innerHTML = '<span class="user-label">' + sender + ':</span> <span class="user-msg">' + message + '</span>';
+            } else {
+                newEl.innerHTML = '<span class="assistant-label">' + sender + ':</span> <span class="assistant-msg">' + message + '</span>';
+            }
+            document.getElementById("chatArea").appendChild(newEl);
+            document.getElementById("chatArea").scrollTop = document.getElementById("chatArea").scrollHeight;
+        });
+    </script>
+</body>
+
+</html>
