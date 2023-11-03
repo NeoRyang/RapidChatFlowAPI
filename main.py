@@ -134,7 +134,7 @@ user_proxy = UserProxyAgentSocket(
 
 @app.get("/query")
 async def query(query: str):
-    await sio.emit("response", f"question: {query}")
+    # await sio.emit("response", f"question: {query}")
     await user_proxy.a_initiate_chat(assistant, message=query)
     # result = extract_messages(user_proxy.chat_messages)
     # await sio.emit("response", result)
